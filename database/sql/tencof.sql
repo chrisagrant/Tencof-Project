@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 13, 2025 at 03:03 PM
+-- Generation Time: Nov 13, 2025 at 03:21 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.16
 
@@ -173,6 +173,21 @@ CREATE TABLE `cache_locks` (
   `owner` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `expiration` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `detail_transaksi`
+--
+
+CREATE TABLE `detail_transaksi` (
+  `id_detail` int NOT NULL,
+  `id_transaksi` int DEFAULT NULL,
+  `id_bahan` bigint UNSIGNED DEFAULT NULL,
+  `jumlah` int DEFAULT NULL,
+  `harga` decimal(12,2) DEFAULT NULL,
+  `subtotal` decimal(12,2) GENERATED ALWAYS AS ((`jumlah` * `harga`)) STORED
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -410,6 +425,23 @@ INSERT INTO `suppliers` (`id`, `name`, `phone`, `address`, `created_at`, `update
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `transaksi`
+--
+
+CREATE TABLE `transaksi` (
+  `id_transaksi` int NOT NULL,
+  `id_user` bigint UNSIGNED DEFAULT NULL,
+  `tanggal` datetime DEFAULT CURRENT_TIMESTAMP,
+  `total` decimal(12,2) DEFAULT '0.00',
+  `jenis` enum('pembelian','penjualan','pemakaian') DEFAULT 'penjualan',
+  `keterangan` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -503,6 +535,14 @@ ALTER TABLE `cache_locks`
   ADD PRIMARY KEY (`key`);
 
 --
+-- Indexes for table `detail_transaksi`
+--
+ALTER TABLE `detail_transaksi`
+  ADD PRIMARY KEY (`id_detail`),
+  ADD KEY `id_transaksi` (`id_transaksi`),
+  ADD KEY `id_bahan` (`id_bahan`);
+
+--
 -- Indexes for table `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
@@ -569,6 +609,13 @@ ALTER TABLE `suppliers`
   ADD UNIQUE KEY `suppliers_phone_unique` (`phone`);
 
 --
+-- Indexes for table `transaksi`
+--
+ALTER TABLE `transaksi`
+  ADD PRIMARY KEY (`id_transaksi`),
+  ADD KEY `id_user` (`id_user`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -584,6 +631,12 @@ ALTER TABLE `users`
 --
 ALTER TABLE `bahan_bakus`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `detail_transaksi`
+--
+ALTER TABLE `detail_transaksi`
+  MODIFY `id_detail` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -628,6 +681,12 @@ ALTER TABLE `suppliers`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `transaksi`
+--
+ALTER TABLE `transaksi`
+  MODIFY `id_transaksi` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -659,6 +718,23 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 DROP TABLE IF EXISTS `view_total_stok_supplier`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_total_stok_supplier`  AS SELECT `sp`.`name` AS `supplier`, count(`st`.`id`) AS `total_jenis_bahan`, sum(`st`.`quantity`) AS `total_unit`, sum((`st`.`quantity` * `st`.`unit_price`)) AS `total_nilai` FROM (`stocks` `st` join `suppliers` `sp` on((`st`.`supplier_id` = `sp`.`id`))) GROUP BY `sp`.`name` ORDER BY `total_nilai` DESC ;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `detail_transaksi`
+--
+ALTER TABLE `detail_transaksi`
+  ADD CONSTRAINT `detail_transaksi_ibfk_1` FOREIGN KEY (`id_transaksi`) REFERENCES `transaksi` (`id_transaksi`),
+  ADD CONSTRAINT `detail_transaksi_ibfk_2` FOREIGN KEY (`id_bahan`) REFERENCES `bahan_bakus` (`id`);
+
+--
+-- Constraints for table `transaksi`
+--
+ALTER TABLE `transaksi`
+  ADD CONSTRAINT `transaksi_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
