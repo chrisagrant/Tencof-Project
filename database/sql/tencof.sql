@@ -438,6 +438,14 @@ CREATE TABLE `transaksi` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- 
+-- Dumping data for table `transaksi`
+-- 
+
+INSERT INTO `transaksi` (`id_transaksi`, `id_user`, `tanggal`, `total`, `jenis`, `keterangan`, `created_at`, `updated_at`) VALUES
+(1, 5, '2025-11-10 10:00:00', 450000.00, 'pembelian', 'Pembelian bahan baku kopi dan gula', '2025-11-10 10:00:00', '2025-11-10 10:00:00'),
+(2, 6, '2025-11-11 09:30:00', 150000.00, 'penjualan', 'Penjualan 10 cup kopi arabika', '2025-11-11 09:30:00', '2025-11-11 09:30:00'),
+(3, 6, '2025-11-12 14:15:00', 80000.00, 'pemakaian', 'Pemakaian internal bahan gula dan susu', '2025-11-12 14:15:00', '2025-11-12 14:15:00');
 
 -- --------------------------------------------------------
 
