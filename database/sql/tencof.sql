@@ -188,6 +188,17 @@ CREATE TABLE `detail_transaksi` (
   `harga` decimal(12,2) DEFAULT NULL,
   `subtotal` decimal(12,2) GENERATED ALWAYS AS ((`jumlah` * `harga`)) STORED
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- 
+-- Dumping data for table `detail_transaksi`
+-- 
+
+INSERT INTO `detail_transaksi` (`id_detail`, `id_transaksi`, `id_bahan`, `jumlah`, `harga`) VALUES
+(1, 1, 1, 2, 150000.00),  -- 2 Kg Kopi Arabika
+(2, 1, 3, 5, 30000.00),   -- 5 Kg Gula Pasir
+(3, 2, 4, 30, 5000.00),   -- 30 Cup Plastik
+(4, 2, 1, 1, 100000.00),  -- 1 Kg Kopi Arabika dijual
+(5, 3, 3, 3, 20000.00),   -- 3 Kg Gula dipakai
+(6, 3, 2, 2, 20000.00);   -- 2 Liter Susu dipakai
 
 -- --------------------------------------------------------
 
