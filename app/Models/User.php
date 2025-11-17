@@ -46,4 +46,28 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the bahan bakus created by this user
+     */
+    public function bahanBakusCreated()
+    {
+        return $this->hasMany(BahanBaku::class, 'created_by');
+    }
+
+    /**
+     * Get the stocks created by this user
+     */
+    public function stocksCreated()
+    {
+        return $this->hasMany(Stock::class, 'created_by');
+    }
+
+    /**
+     * Get the stock histories created by this user
+     */
+    public function stockHistoriesCreated()
+    {
+        return $this->hasMany(StockHistory::class, 'created_by');
+    }
 }
