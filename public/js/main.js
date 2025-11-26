@@ -1,46 +1,58 @@
-const mockData = {
-    users: [
-        { id: 1, name: 'Admin User', email: 'admin@inventory.com', password: 'admin123', role: 'admin' },
-        { id: 2, name: 'Warehouse Staff', email: 'staff@inventory.com', password: 'staff123', role: 'staff' },
-        { id: 3, name: 'Manager', email: 'manager@inventory.com', password: 'manager123', role: 'manager' }
-    ],
-    satuans: [
-        { id: 1, name: 'Kilogram (kg)' },
-        { id: 2, name: 'Gram (g)' },
-        { id: 3, name: 'Liter (L)' },
-        { id: 4, name: 'Milliliter (ml)' },
-        { id: 5, name: 'Pcs (Piece)' },
-        { id: 6, name: 'Box' }
-    ],
-    suppliers: [
-        { id: 1, name: 'PT Maju Jaya', phone: '021-1234567', address: 'Jl. Merdeka No. 10, Jakarta' },
-        { id: 2, name: 'CV Sukses Bersama', phone: '031-9876543', address: 'Jl. Diponegoro No. 25, Surabaya' },
-        { id: 3, name: 'UD Berkah Sejahtera', phone: '0274-555666', address: 'Jl. Ahmad Yani No. 15, Yogyakarta' }
-    ],
-    bahanBakus: [
-        { id: 1, name: 'Tepung Terigu', satuan_id: 1, created_by: 1 },
-        { id: 2, name: 'Gula Pasir', satuan_id: 1, created_by: 1 },
-        { id: 3, name: 'Minyak Goreng', satuan_id: 3, created_by: 1 },
-        { id: 4, name: 'Telur Ayam', satuan_id: 5, created_by: 1 }
-    ],
-    stocks: [
-        { id: 1, bahan_baku_id: 1, quantity: 500, unit_price: 8000, supplier_id: 1, created_by: 1 },
-        { id: 2, bahan_baku_id: 2, quantity: 300, unit_price: 12000, supplier_id: 2, created_by: 1 },
-        { id: 3, bahan_baku_id: 3, quantity: 100, unit_price: 15000, supplier_id: 3, created_by: 1 },
-        { id: 4, bahan_baku_id: 4, quantity: 1000, unit_price: 1500, supplier_id: 1, created_by: 1 }
-    ],
-    stockHistory: [
-        { id: 1, bahan_baku_id: 1, type: 'IN', quantity: 500, created_by: 1, created_at: new Date(Date.now() - 86400000).toISOString() },
-        { id: 2, bahan_baku_id: 2, type: 'IN', quantity: 300, created_by: 1, created_at: new Date(Date.now() - 172800000).toISOString() },
-        { id: 3, bahan_baku_id: 3, type: 'IN', quantity: 100, created_by: 1, created_at: new Date(Date.now() - 259200000).toISOString() },
-        { id: 4, bahan_baku_id: 4, type: 'IN', quantity: 1000, created_by: 1, created_at: new Date(Date.now() - 345600000).toISOString() }
-    ]
+// Real application data - will be loaded from API
+let appData = {
+    users: [],
+    satuans: [],
+    suppliers: [],
+    bahanBakus: [],
+    stocks: [],
+    stockHistory: []
 };
 
 let currentPage = 'dashboard';
 let currentPageNum = 1;
 const itemsPerPage = 5;
 let filteredData = [];
+
+// Load data from API on page load
+async function loadAppData() {
+    try {
+        // Load all data from API in parallel
+        const [satuansRes, suppliersRes, bahanBakusRes, stocksRes, historiesRes] = await Promise.all([
+            SatuanAPI.getAll(),
+            SupplierAPI.getAll(),
+            BahanBakuAPI.getAll(),
+            StockAPI.getAll(),
+            StockHistoryAPI.getAll()
+        ]);
+
+        appData.satuans = satuansRes.data || [];
+        appData.suppliers = suppliersRes.data || [];
+        appData.bahanBakus = bahanBakusRes.data || [];
+        appData.stocks = stocksRes.data || [];
+        appData.stockHistory = historiesRes.data || [];
+
+        console.log('✓ Data loaded from API', appData);
+    } catch (error) {
+        console.error('Error loading app data:', error);
+        showToast('Error loading data from server', 'error');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadAppData();
+    renderPage();
+});
+
+// Mock data fallback (for reference only)
+const mockData = {
+    users: [],
+    satuans: appData.satuans,
+    suppliers: appData.suppliers,
+    bahanBakus: appData.bahanBakus,
+    stocks: appData.stocks,
+    stockHistory: appData.stockHistory
+};
 
 function getNextId(dataArray) {
     return dataArray.length > 0 ? Math.max(...dataArray.map(item => item.id)) + 1 : 1;
@@ -84,22 +96,22 @@ function formatDate(dateString) {
 }
 
 function getSatuanName(satuanId) {
-    const satuan = mockData.satuans.find(s => s.id === satuanId);
+    const satuan = appData.satuans.find(s => s.id === satuanId);
     return satuan ? satuan.name : 'N/A';
 }
 
 function getBahanBakuName(bahanBakuId) {
-    const bahanBaku = mockData.bahanBakus.find(b => b.id === bahanBakuId);
+    const bahanBaku = appData.bahanBakus.find(b => b.id === bahanBakuId);
     return bahanBaku ? bahanBaku.name : 'N/A';
 }
 
 function getSupplierName(supplierId) {
-    const supplier = mockData.suppliers.find(s => s.id === supplierId);
+    const supplier = appData.suppliers.find(s => s.id === supplierId);
     return supplier ? supplier.name : 'N/A';
 }
 
 function getUserName(userId) {
-    const user = mockData.users.find(u => u.id === userId);
+    const user = appData.users.find(u => u.id === userId);
     return user ? user.name : 'N/A';
 }
 
@@ -143,11 +155,11 @@ function getPaginatedData(data) {
 }
 
 function renderDashboard() {
-    const totalBahanBaku = mockData.bahanBakus.length;
-    const totalStock = mockData.stocks.reduce((sum, s) => sum + s.quantity, 0);
-    const totalSupplier = mockData.suppliers.length;
+    const totalBahanBaku = appData.bahanBakus.length;
+    const totalStock = appData.stocks.reduce((sum, s) => sum + s.quantity, 0);
+    const totalSupplier = appData.suppliers.length;
     
-    const recentHistory = mockData.stockHistory.slice(-5).reverse();
+    const recentHistory = appData.stockHistory.slice(-5).reverse();
     
     let historyHtml = '';
     if (recentHistory.length === 0) {
@@ -204,7 +216,7 @@ function renderDashboard() {
 
 function renderBahanBaku() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    filteredData = mockData.bahanBakus.filter(b => 
+    filteredData = appData.bahanBakus.filter(b => 
         b.name.toLowerCase().includes(searchTerm)
     );
     
@@ -256,7 +268,7 @@ function renderBahanBaku() {
 
 function renderSatuan() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    filteredData = mockData.satuans.filter(s => 
+    filteredData = appData.satuans.filter(s => 
         s.name.toLowerCase().includes(searchTerm)
     );
     
@@ -304,7 +316,7 @@ function renderSatuan() {
 
 function renderSupplier() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    filteredData = mockData.suppliers.filter(s => 
+    filteredData = appData.suppliers.filter(s => 
         s.name.toLowerCase().includes(searchTerm) ||
         s.phone.toLowerCase().includes(searchTerm) ||
         s.address.toLowerCase().includes(searchTerm)
@@ -358,8 +370,8 @@ function renderSupplier() {
 
 function renderStock() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    filteredData = mockData.stocks.filter(s => {
-        const bahanBaku = mockData.bahanBakus.find(b => b.id === s.bahan_baku_id);
+    filteredData = appData.stocks.filter(s => {
+        const bahanBaku = appData.bahanBakus.find(b => b.id === s.bahan_baku_id);
         return bahanBaku && bahanBaku.name.toLowerCase().includes(searchTerm);
     });
     
@@ -418,8 +430,8 @@ function renderStockHistory() {
     const filterType = document.getElementById('filter-type')?.value || '';
     const filterBahanBaku = document.getElementById('filter-bahan-baku')?.value || '';
     
-    filteredData = mockData.stockHistory.filter(h => {
-        const bahanBaku = mockData.bahanBakus.find(b => b.id === h.bahan_baku_id);
+    filteredData = appData.stockHistory.filter(h => {
+        const bahanBaku = appData.bahanBakus.find(b => b.id === h.bahan_baku_id);
         const matchesSearch = bahanBaku && bahanBaku.name.toLowerCase().includes(searchTerm);
         const matchesType = !filterType || h.type === filterType;
         const matchesBahanBaku = !filterBahanBaku || h.bahan_baku_id === parseInt(filterBahanBaku);
@@ -443,7 +455,7 @@ function renderStockHistory() {
         `).join('');
     }
     
-    const satuanOptions = mockData.bahanBakus.map(b => 
+    const satuanOptions = appData.bahanBakus.map(b => 
         `<option value="${b.id}">${b.name}</option>`
     ).join('');
     
@@ -483,7 +495,7 @@ function renderStockHistory() {
 
 function renderUsers() {
     const user = getCurrentUser();
-    const allUsers = JSON.parse(localStorage.getItem('ten_coffee_users')) || mockData.users;
+    const allUsers = JSON.parse(localStorage.getItem('ten_coffee_users')) || appData.users;
     
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
     filteredData = allUsers.filter(u => 
@@ -535,10 +547,10 @@ function openBahanBakuForm(id = null) {
         return;
     }
     
-    const bahanBaku = id ? mockData.bahanBakus.find(b => b.id === id) : null;
+    const bahanBaku = id ? appData.bahanBakus.find(b => b.id === id) : null;
     const title = bahanBaku ? 'Edit Bahan Baku' : 'Tambah Bahan Baku';
     
-    const satuanOptions = mockData.satuans.map(s => 
+    const satuanOptions = appData.satuans.map(s => 
         `<option value="${s.id}" ${bahanBaku && bahanBaku.satuan_id === s.id ? 'selected' : ''}>${s.name}</option>`
     ).join('');
     
@@ -577,13 +589,13 @@ function saveBahanBaku(event, id) {
     const user = getCurrentUser();
     
     if (id) {
-        const bahanBaku = mockData.bahanBakus.find(b => b.id === id);
+        const bahanBaku = appData.bahanBakus.find(b => b.id === id);
         bahanBaku.name = name;
         bahanBaku.satuan_id = satuanId;
         showToast('Bahan Baku berhasil diperbarui', 'success');
     } else {
-        mockData.bahanBakus.push({
-            id: getNextId(mockData.bahanBakus),
+        appData.bahanBakus.push({
+            id: getNextId(appData.bahanBakus),
             name,
             satuan_id: satuanId,
             created_by: user.id
@@ -607,9 +619,9 @@ function deleteBahanBaku(id) {
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus bahan baku ini?')) {
-        mockData.bahanBakus = mockData.bahanBakus.filter(b => b.id !== id);
-        mockData.stocks = mockData.stocks.filter(s => s.bahan_baku_id !== id);
-        mockData.stockHistory = mockData.stockHistory.filter(h => h.bahan_baku_id !== id);
+        appData.bahanBakus = appData.bahanBakus.filter(b => b.id !== id);
+        appData.stocks = appData.stocks.filter(s => s.bahan_baku_id !== id);
+        appData.stockHistory = appData.stockHistory.filter(h => h.bahan_baku_id !== id);
         showToast('Bahan Baku berhasil dihapus', 'success');
         currentPageNum = 1;
         renderPage();
@@ -622,7 +634,7 @@ function openSatuanForm(id = null) {
         return;
     }
     
-    const satuan = id ? mockData.satuans.find(s => s.id === id) : null;
+    const satuan = id ? appData.satuans.find(s => s.id === id) : null;
     const title = satuan ? 'Edit Satuan' : 'Tambah Satuan';
     
     const formHtml = `
@@ -652,12 +664,12 @@ function saveSatuan(event, id) {
     const name = document.getElementById('satuan-name').value;
     
     if (id) {
-        const satuan = mockData.satuans.find(s => s.id === id);
+        const satuan = appData.satuans.find(s => s.id === id);
         satuan.name = name;
         showToast('Satuan berhasil diperbarui', 'success');
     } else {
-        mockData.satuans.push({
-            id: getNextId(mockData.satuans),
+        appData.satuans.push({
+            id: getNextId(appData.satuans),
             name
         });
         showToast('Satuan berhasil ditambahkan', 'success');
@@ -679,7 +691,7 @@ function deleteSatuan(id) {
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus satuan ini?')) {
-        mockData.satuans = mockData.satuans.filter(s => s.id !== id);
+        appData.satuans = appData.satuans.filter(s => s.id !== id);
         showToast('Satuan berhasil dihapus', 'success');
         currentPageNum = 1;
         renderPage();
@@ -692,7 +704,7 @@ function openSupplierForm(id = null) {
         return;
     }
     
-    const supplier = id ? mockData.suppliers.find(s => s.id === id) : null;
+    const supplier = id ? appData.suppliers.find(s => s.id === id) : null;
     const title = supplier ? 'Edit Supplier' : 'Tambah Supplier';
     
     const formHtml = `
@@ -732,14 +744,14 @@ function saveSupplier(event, id) {
     const address = document.getElementById('supplier-address').value;
     
     if (id) {
-        const supplier = mockData.suppliers.find(s => s.id === id);
+        const supplier = appData.suppliers.find(s => s.id === id);
         supplier.name = name;
         supplier.phone = phone;
         supplier.address = address;
         showToast('Supplier berhasil diperbarui', 'success');
     } else {
-        mockData.suppliers.push({
-            id: getNextId(mockData.suppliers),
+        appData.suppliers.push({
+            id: getNextId(appData.suppliers),
             name,
             phone,
             address
@@ -763,7 +775,7 @@ function deleteSupplier(id) {
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus supplier ini?')) {
-        mockData.suppliers = mockData.suppliers.filter(s => s.id !== id);
+        appData.suppliers = appData.suppliers.filter(s => s.id !== id);
         showToast('Supplier berhasil dihapus', 'success');
         currentPageNum = 1;
         renderPage();
@@ -776,14 +788,14 @@ function openStockForm(id = null) {
         return;
     }
     
-    const stock = id ? mockData.stocks.find(s => s.id === id) : null;
+    const stock = id ? appData.stocks.find(s => s.id === id) : null;
     const title = stock ? 'Edit Stock' : 'Tambah Stock';
     
-    const bahanBakuOptions = mockData.bahanBakus.map(b => 
+    const bahanBakuOptions = appData.bahanBakus.map(b => 
         `<option value="${b.id}" ${stock && stock.bahan_baku_id === b.id ? 'selected' : ''}>${b.name}</option>`
     ).join('');
     
-    const supplierOptions = mockData.suppliers.map(s => 
+    const supplierOptions = appData.suppliers.map(s => 
         `<option value="${s.id}" ${stock && stock.supplier_id === s.id ? 'selected' : ''}>${s.name}</option>`
     ).join('');
     
@@ -838,7 +850,7 @@ function saveStock(event, id) {
     const user = getCurrentUser();
     
     if (id) {
-        const stock = mockData.stocks.find(s => s.id === id);
+        const stock = appData.stocks.find(s => s.id === id);
         const oldQuantity = stock.quantity;
         stock.quantity = quantity;
         stock.unit_price = unitPrice;
@@ -846,8 +858,8 @@ function saveStock(event, id) {
         
         if (oldQuantity !== quantity) {
             const diff = quantity - oldQuantity;
-            mockData.stockHistory.push({
-                id: getNextId(mockData.stockHistory),
+            appData.stockHistory.push({
+                id: getNextId(appData.stockHistory),
                 bahan_baku_id: bahanBakuId,
                 type: diff > 0 ? 'IN' : 'OUT',
                 quantity: Math.abs(diff),
@@ -858,8 +870,8 @@ function saveStock(event, id) {
         
         showToast('Stock berhasil diperbarui', 'success');
     } else {
-        mockData.stocks.push({
-            id: getNextId(mockData.stocks),
+        appData.stocks.push({
+            id: getNextId(appData.stocks),
             bahan_baku_id: bahanBakuId,
             quantity,
             unit_price: unitPrice,
@@ -867,8 +879,8 @@ function saveStock(event, id) {
             created_by: user.id
         });
         
-        mockData.stockHistory.push({
-            id: getNextId(mockData.stockHistory),
+        appData.stockHistory.push({
+            id: getNextId(appData.stockHistory),
             bahan_baku_id: bahanBakuId,
             type: 'IN',
             quantity,
@@ -895,7 +907,7 @@ function deleteStock(id) {
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus stock ini?')) {
-        mockData.stocks = mockData.stocks.filter(s => s.id !== id);
+        appData.stocks = appData.stocks.filter(s => s.id !== id);
         showToast('Stock berhasil dihapus', 'success');
         currentPageNum = 1;
         renderPage();
