@@ -576,7 +576,7 @@ function openBahanBakuForm(id = null) {
     openModal(title, formHtml);
 }
 
-function saveBahanBaku(event, id) {
+async function saveBahanBaku(event, id) {
     event.preventDefault();
     
     if (!canManage()) {
@@ -586,45 +586,45 @@ function saveBahanBaku(event, id) {
     
     const name = document.getElementById('bahan-baku-name').value;
     const satuanId = parseInt(document.getElementById('bahan-baku-satuan').value);
-    const user = getCurrentUser();
     
-    if (id) {
-        const bahanBaku = appData.bahanBakus.find(b => b.id === id);
-        bahanBaku.name = name;
-        bahanBaku.satuan_id = satuanId;
-        showToast('Bahan Baku berhasil diperbarui', 'success');
-    } else {
-        appData.bahanBakus.push({
-            id: getNextId(appData.bahanBakus),
-            name,
-            satuan_id: satuanId,
-            created_by: user.id
-        });
-        showToast('Bahan Baku berhasil ditambahkan', 'success');
+    try {
+        if (id) {
+            await BahanBakuAPI.update(id, { name, satuan_id: satuanId });
+            showToast('Bahan Baku berhasil diperbarui', 'success');
+        } else {
+            await BahanBakuAPI.create({ name, satuan_id: satuanId });
+            showToast('Bahan Baku berhasil ditambahkan', 'success');
+        }
+        
+        await loadAppData();
+        closeModal();
+        currentPageNum = 1;
+        renderPage();
+    } catch (error) {
+        showToast('Gagal menyimpan Bahan Baku: ' + error.message, 'error');
     }
-    
-    closeModal();
-    currentPageNum = 1;
-    renderPage();
 }
 
 function editBahanBaku(id) {
     openBahanBakuForm(id);
 }
 
-function deleteBahanBaku(id) {
+async function deleteBahanBaku(id) {
     if (!canManage()) {
         showToast('Anda tidak memiliki akses untuk mengelola data ini', 'error');
         return;
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus bahan baku ini?')) {
-        appData.bahanBakus = appData.bahanBakus.filter(b => b.id !== id);
-        appData.stocks = appData.stocks.filter(s => s.bahan_baku_id !== id);
-        appData.stockHistory = appData.stockHistory.filter(h => h.bahan_baku_id !== id);
-        showToast('Bahan Baku berhasil dihapus', 'success');
-        currentPageNum = 1;
-        renderPage();
+        try {
+            await BahanBakuAPI.delete(id);
+            showToast('Bahan Baku berhasil dihapus', 'success');
+            await loadAppData();
+            currentPageNum = 1;
+            renderPage();
+        } catch (error) {
+            showToast('Gagal menghapus Bahan Baku: ' + error.message, 'error');
+        }
     }
 }
 
@@ -653,7 +653,7 @@ function openSatuanForm(id = null) {
     openModal(title, formHtml);
 }
 
-function saveSatuan(event, id) {
+async function saveSatuan(event, id) {
     event.preventDefault();
     
     if (!canManage()) {
@@ -663,38 +663,44 @@ function saveSatuan(event, id) {
     
     const name = document.getElementById('satuan-name').value;
     
-    if (id) {
-        const satuan = appData.satuans.find(s => s.id === id);
-        satuan.name = name;
-        showToast('Satuan berhasil diperbarui', 'success');
-    } else {
-        appData.satuans.push({
-            id: getNextId(appData.satuans),
-            name
-        });
-        showToast('Satuan berhasil ditambahkan', 'success');
+    try {
+        if (id) {
+            await SatuanAPI.update(id, { name });
+            showToast('Satuan berhasil diperbarui', 'success');
+        } else {
+            await SatuanAPI.create({ name });
+            showToast('Satuan berhasil ditambahkan', 'success');
+        }
+        
+        await loadAppData();
+        closeModal();
+        currentPageNum = 1;
+        renderPage();
+    } catch (error) {
+        showToast('Gagal menyimpan Satuan: ' + error.message, 'error');
     }
-    
-    closeModal();
-    currentPageNum = 1;
-    renderPage();
 }
 
 function editSatuan(id) {
     openSatuanForm(id);
 }
 
-function deleteSatuan(id) {
+async function deleteSatuan(id) {
     if (!canManage()) {
         showToast('Anda tidak memiliki akses untuk mengelola data ini', 'error');
         return;
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus satuan ini?')) {
-        appData.satuans = appData.satuans.filter(s => s.id !== id);
-        showToast('Satuan berhasil dihapus', 'success');
-        currentPageNum = 1;
-        renderPage();
+        try {
+            await SatuanAPI.delete(id);
+            showToast('Satuan berhasil dihapus', 'success');
+            await loadAppData();
+            currentPageNum = 1;
+            renderPage();
+        } catch (error) {
+            showToast('Gagal menghapus Satuan: ' + error.message, 'error');
+        }
     }
 }
 
@@ -731,7 +737,7 @@ function openSupplierForm(id = null) {
     openModal(title, formHtml);
 }
 
-function saveSupplier(event, id) {
+async function saveSupplier(event, id) {
     event.preventDefault();
     
     if (!canManage()) {
@@ -743,42 +749,44 @@ function saveSupplier(event, id) {
     const phone = document.getElementById('supplier-phone').value;
     const address = document.getElementById('supplier-address').value;
     
-    if (id) {
-        const supplier = appData.suppliers.find(s => s.id === id);
-        supplier.name = name;
-        supplier.phone = phone;
-        supplier.address = address;
-        showToast('Supplier berhasil diperbarui', 'success');
-    } else {
-        appData.suppliers.push({
-            id: getNextId(appData.suppliers),
-            name,
-            phone,
-            address
-        });
-        showToast('Supplier berhasil ditambahkan', 'success');
+    try {
+        if (id) {
+            await SupplierAPI.update(id, { name, phone, address });
+            showToast('Supplier berhasil diperbarui', 'success');
+        } else {
+            await SupplierAPI.create({ name, phone, address });
+            showToast('Supplier berhasil ditambahkan', 'success');
+        }
+        
+        await loadAppData();
+        closeModal();
+        currentPageNum = 1;
+        renderPage();
+    } catch (error) {
+        showToast('Gagal menyimpan Supplier: ' + error.message, 'error');
     }
-    
-    closeModal();
-    currentPageNum = 1;
-    renderPage();
 }
 
 function editSupplier(id) {
     openSupplierForm(id);
 }
 
-function deleteSupplier(id) {
+async function deleteSupplier(id) {
     if (!canManage()) {
         showToast('Anda tidak memiliki akses untuk mengelola data ini', 'error');
         return;
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus supplier ini?')) {
-        appData.suppliers = appData.suppliers.filter(s => s.id !== id);
-        showToast('Supplier berhasil dihapus', 'success');
-        currentPageNum = 1;
-        renderPage();
+        try {
+            await SupplierAPI.delete(id);
+            showToast('Supplier berhasil dihapus', 'success');
+            await loadAppData();
+            currentPageNum = 1;
+            renderPage();
+        } catch (error) {
+            showToast('Gagal menghapus Supplier: ' + error.message, 'error');
+        }
     }
 }
 
@@ -835,7 +843,7 @@ function openStockForm(id = null) {
     openModal(title, formHtml);
 }
 
-function saveStock(event, id) {
+async function saveStock(event, id) {
     event.preventDefault();
     
     if (!canManage()) {
@@ -847,70 +855,55 @@ function saveStock(event, id) {
     const quantity = parseInt(document.getElementById('stock-quantity').value);
     const unitPrice = parseInt(document.getElementById('stock-unit-price').value);
     const supplierId = parseInt(document.getElementById('stock-supplier').value);
-    const user = getCurrentUser();
     
-    if (id) {
-        const stock = appData.stocks.find(s => s.id === id);
-        const oldQuantity = stock.quantity;
-        stock.quantity = quantity;
-        stock.unit_price = unitPrice;
-        stock.supplier_id = supplierId;
-        
-        if (oldQuantity !== quantity) {
-            const diff = quantity - oldQuantity;
-            appData.stockHistory.push({
-                id: getNextId(appData.stockHistory),
+    try {
+        if (id) {
+            await StockAPI.update(id, {
                 bahan_baku_id: bahanBakuId,
-                type: diff > 0 ? 'IN' : 'OUT',
-                quantity: Math.abs(diff),
-                created_by: user.id,
-                created_at: new Date().toISOString()
+                quantity,
+                unit_price: unitPrice,
+                supplier_id: supplierId
             });
+            showToast('Stock berhasil diperbarui', 'success');
+        } else {
+            await StockAPI.create({
+                bahan_baku_id: bahanBakuId,
+                quantity,
+                unit_price: unitPrice,
+                supplier_id: supplierId
+            });
+            showToast('Stock berhasil ditambahkan', 'success');
         }
         
-        showToast('Stock berhasil diperbarui', 'success');
-    } else {
-        appData.stocks.push({
-            id: getNextId(appData.stocks),
-            bahan_baku_id: bahanBakuId,
-            quantity,
-            unit_price: unitPrice,
-            supplier_id: supplierId,
-            created_by: user.id
-        });
-        
-        appData.stockHistory.push({
-            id: getNextId(appData.stockHistory),
-            bahan_baku_id: bahanBakuId,
-            type: 'IN',
-            quantity,
-            created_by: user.id,
-            created_at: new Date().toISOString()
-        });
-        
-        showToast('Stock berhasil ditambahkan', 'success');
+        await loadAppData();
+        closeModal();
+        currentPageNum = 1;
+        renderPage();
+    } catch (error) {
+        showToast('Gagal menyimpan Stock: ' + error.message, 'error');
     }
-    
-    closeModal();
-    currentPageNum = 1;
-    renderPage();
 }
 
 function editStock(id) {
     openStockForm(id);
 }
 
-function deleteStock(id) {
+async function deleteStock(id) {
     if (!canManage()) {
         showToast('Anda tidak memiliki akses untuk mengelola data ini', 'error');
         return;
     }
     
     if (confirm('Apakah Anda yakin ingin menghapus stock ini?')) {
-        appData.stocks = appData.stocks.filter(s => s.id !== id);
-        showToast('Stock berhasil dihapus', 'success');
-        currentPageNum = 1;
-        renderPage();
+        try {
+            await StockAPI.delete(id);
+            showToast('Stock berhasil dihapus', 'success');
+            await loadAppData();
+            currentPageNum = 1;
+            renderPage();
+        } catch (error) {
+            showToast('Gagal menghapus Stock: ' + error.message, 'error');
+        }
     }
 }
 
