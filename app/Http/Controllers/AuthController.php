@@ -20,24 +20,40 @@ class AuthController extends Controller
                 'password' => 'required'
             ]);
 
-            if (Auth::attempt($credentials)) {
-                $request->session()->regenerate();
-
+            // Find user by email
+            $user = User::where('email', $credentials['email'])->first();
+            
+            if (!$user || !Hash::check($credentials['password'], $user->password)) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Login berhasil'
-                ], 200);
+                    'success' => false,
+                    'message' => 'Email atau password salah'
+                ], 401);
             }
 
+            // Login the user
+            Auth::login($user);
+            $request->session()->regenerate();
+
             return response()->json([
-                'success' => false,
-                'message' => 'Email atau password salah'
-            ], 401);
+                'success' => true,
+                'message' => 'Login berhasil',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role
+                ]
+            ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', $e->errors()['email'] ?? [])
+                'message' => 'Validasi gagal: ' . implode(', ', array_values($e->errors())[0] ?? [])
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -98,8 +114,21 @@ class AuthController extends Controller
      */
     public function user()
     {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+        
         return response()->json([
-            'user' => Auth::user()
-        ]);
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role
+            ]
+        ], 200);
     }
 }

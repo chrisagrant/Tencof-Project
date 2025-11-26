@@ -35,11 +35,11 @@ Route::prefix('api')->group(function () {
     // Authentication routes
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
+    Route::get('/user', [AuthController::class, 'user']);
     
     // Protected routes (require authentication)
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/user', [AuthController::class, 'user']);
         
         // Bahan Baku routes
         Route::apiResource('bahan-baku', BahanBakuController::class);

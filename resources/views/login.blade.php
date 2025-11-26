@@ -363,13 +363,24 @@
     ></script>
     <script src="{{ asset('js/auth.js') }}"></script>
     <script>
-      // Initialize users
+      // Initialize users (for localStorage compatibility)
       initializeUsers();
 
-      // Check if already logged in
-      if (isAuthenticated()) {
-        window.location.href = "/";
-      }
+      // Redirect jika sudah authenticated via session
+      fetch('/api/user', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          // User sudah authenticated
+          window.location.href = '/dashboard';
+        }
+      })
+      .catch(() => {
+        // Belum authenticated, lanjut ke login page
+      });
 
       const loginForm = document.getElementById("loginForm");
       const alertDiv = document.getElementById("alert");
@@ -384,13 +395,43 @@
         }, 5000);
       }
 
-      loginForm.addEventListener("submit", function (e) {
+      loginForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
 
-        login(email, password);
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              email: email,
+              password: password
+            })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            showAlert(data.message, 'success');
+            // Redirect to dashboard after 1 second
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 1000);
+          } else {
+            showAlert(data.message || 'Login gagal', 'error');
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          showAlert('Terjadi kesalahan saat login', 'error');
+        }
       });
     </script>
   </body>
