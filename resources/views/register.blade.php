@@ -317,13 +317,24 @@
 
     <script src="{{ asset('js/auth.js') }}"></script>
     <script>
-      // Initialize users
+      // Initialize users (for localStorage compatibility)
       initializeUsers();
 
-      // Check if already logged in
-      if (isAuthenticated()) { 
-        window.location.href = "/";
-      }
+      // Redirect jika sudah authenticated via session
+      fetch('/api/user', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          // User sudah authenticated
+          window.location.href = '/dashboard';
+        }
+      })
+      .catch(() => {
+        // Belum authenticated, lanjut ke register page
+      });
 
       const registerForm = document.getElementById("registerForm");
       const alertDiv = document.getElementById("alert");
@@ -338,7 +349,7 @@
         }, 5000);
       }
 
-      registerForm.addEventListener("submit", function (e) {
+      registerForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const name = document.getElementById("name").value;
@@ -364,7 +375,39 @@
           return;
         }
 
-        register(name, email, password, role);
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          
+          const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              name: name,
+              email: email,
+              password: password,
+              role: role
+            })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            showAlert(data.message, 'success');
+            // Redirect to login after 1.5 seconds
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 1500);
+          } else {
+            showAlert(data.message || 'Registrasi gagal', 'error');
+          }
+        } catch (error) {
+          console.error('Register error:', error);
+          showAlert('Terjadi kesalahan saat registrasi', 'error');
+        }
       });
     </script>
   </body>
