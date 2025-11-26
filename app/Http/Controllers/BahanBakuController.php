@@ -13,15 +13,12 @@ class BahanBakuController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        try {
+            $bahanBakus = BahanBaku::with('satuan')->get();
+            return response()->json(['data' => $bahanBakus], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -29,7 +26,17 @@ class BahanBakuController extends Controller
      */
     public function store(StoreBahanBakuRequest $request)
     {
-        //
+        try {
+            $bahanBaku = BahanBaku::create([
+                'name' => $request->name,
+                'satuan_id' => $request->satuan_id,
+                'created_by' => auth()->id()
+            ]);
+            
+            return response()->json(['message' => 'Bahan Baku created successfully', 'data' => $bahanBaku], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -37,15 +44,12 @@ class BahanBakuController extends Controller
      */
     public function show(BahanBaku $bahanBaku)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(BahanBaku $bahanBaku)
-    {
-        //
+        try {
+            $bahanBaku->load('satuan');
+            return response()->json(['data' => $bahanBaku], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -53,7 +57,13 @@ class BahanBakuController extends Controller
      */
     public function update(UpdateBahanBakuRequest $request, BahanBaku $bahanBaku)
     {
-        //
+        try {
+            $bahanBaku->update($request->only(['name', 'satuan_id']));
+            
+            return response()->json(['message' => 'Bahan Baku updated successfully', 'data' => $bahanBaku], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -61,6 +71,12 @@ class BahanBakuController extends Controller
      */
     public function destroy(BahanBaku $bahanBaku)
     {
-        //
+        try {
+            $bahanBaku->delete();
+            
+            return response()->json(['message' => 'Bahan Baku deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

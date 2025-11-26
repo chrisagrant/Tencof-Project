@@ -25,7 +25,10 @@ Route::get('/register', function () {
 // Dashboard/Main page
 Route::get('/dashboard', function () {
     return view('index');
-})->name('dashboard');
+})->name('dashboard')->middleware('auth');
+
+// Logout route
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // API Routes for resource management
 Route::prefix('api')->group(function () {

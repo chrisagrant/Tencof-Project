@@ -13,15 +13,12 @@ class StockHistoryController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        try {
+            $stockHistories = StockHistory::with('bahanBaku')->get();
+            return response()->json(['data' => $stockHistories], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -29,7 +26,17 @@ class StockHistoryController extends Controller
      */
     public function store(StoreStockHistoryRequest $request)
     {
-        //
+        try {
+            $stockHistory = StockHistory::create([
+                'bahan_baku_id' => $request->bahan_baku_id,
+                'type' => $request->type,
+                'quantity' => $request->quantity,
+                'created_by' => auth()->id()
+            ]);
+            return response()->json(['message' => 'Stock History created successfully', 'data' => $stockHistory], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -37,15 +44,12 @@ class StockHistoryController extends Controller
      */
     public function show(StockHistory $stockHistory)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(StockHistory $stockHistory)
-    {
-        //
+        try {
+            $stockHistory->load('bahanBaku');
+            return response()->json(['data' => $stockHistory], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -53,7 +57,12 @@ class StockHistoryController extends Controller
      */
     public function update(UpdateStockHistoryRequest $request, StockHistory $stockHistory)
     {
-        //
+        try {
+            $stockHistory->update($request->only(['bahan_baku_id', 'type', 'quantity']));
+            return response()->json(['message' => 'Stock History updated successfully', 'data' => $stockHistory], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -61,6 +70,11 @@ class StockHistoryController extends Controller
      */
     public function destroy(StockHistory $stockHistory)
     {
-        //
+        try {
+            $stockHistory->delete();
+            return response()->json(['message' => 'Stock History deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

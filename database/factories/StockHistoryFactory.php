@@ -19,5 +19,5 @@ class StockHistoryFactory extends Factory
         return [
             //
         ];
-    }
+    }+
 }

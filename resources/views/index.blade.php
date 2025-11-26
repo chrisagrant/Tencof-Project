@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Ten Coffee - Inventory Management System</title>
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-
   </head>
   <body>
     <div id="app">
@@ -56,10 +56,13 @@
               placeholder="Search..."
             />
             <div class="user-info">
-              <span id="user-name">User</span>
-              <span class="user-role" id="user-role">Role</span>
+              <span id="user-name">{{ Auth::user()->name ?? 'User' }}</span>
+              <span class="user-role" id="user-role">{{ strtoupper(Auth::user()->role ?? 'Role') }}</span>
             </div>
-            <button class="btn-logout" onclick="logout()">Logout</button>
+            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+              @csrf
+              <button type="submit" class="btn-logout">Logout</button>
+            </form>
           </div>
         </div>
 
@@ -75,7 +78,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h3 id="modal-title">Modal</h3>
-          <button class="modal-close" id="modal-close">&times;</button>
+          <button class="modal-close" id="modal-close" type="button">&times;</button>
         </div>
         <div class="modal-body" id="modal-body">
           <!-- Form content will be rendered here -->
@@ -83,47 +86,17 @@
       </div>
     </div>
 
+    <script>
+      // Setup CSRF token for all AJAX requests
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      
+      window.apiHeaders = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken
+      };
+    </script>
+    <script src="{{ asset('js/api.js') }}"></script>
     <script src="{{ asset('js/auth.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
-
-    <script>
-      // Check authentication on page load
-      if (!requireAuth()) {
-        // Will redirect to login if not authenticated
-      } else {
-        // Display user info
-        const user = getCurrentUser();
-        document.getElementById("user-name").textContent = user.name;
-        document.getElementById("user-role").textContent =
-          user.role.toUpperCase();
-
-        // Apply role-based access control
-        applyRoleBasedAccess();
-      }
-
-      function applyRoleBasedAccess() {
-        const user = getCurrentUser();
-
-        // Kasir role restrictions
-        if (user.role === "kasir") {
-          // Hide management buttons for kasir
-          const restrictedPages = ["bahan-baku", "satuan", "supplier", "stock"];
-          restrictedPages.forEach((page) => {
-            const navItem = document.querySelector(`[data-page="${page}"]`);
-            if (navItem) {
-              navItem.style.display = "none";
-            }
-          });
-        }
-
-        // Admin role restrictions (cannot access users page)
-        if (user.role === "admin") {
-          const usersNav = document.getElementById("nav-users");
-          if (usersNav) {
-            usersNav.style.display = "none";
-          }
-        }
-      }
-    </script>
   </body>
 </html>

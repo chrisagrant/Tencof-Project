@@ -13,15 +13,12 @@ class SatuanController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        try {
+            $satuans = Satuan::all();
+            return response()->json(['data' => $satuans], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -29,7 +26,12 @@ class SatuanController extends Controller
      */
     public function store(StoreSatuanRequest $request)
     {
-        //
+        try {
+            $satuan = Satuan::create(['name' => $request->name]);
+            return response()->json(['message' => 'Satuan created successfully', 'data' => $satuan], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -37,15 +39,11 @@ class SatuanController extends Controller
      */
     public function show(Satuan $satuan)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Satuan $satuan)
-    {
-        //
+        try {
+            return response()->json(['data' => $satuan], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -53,7 +51,12 @@ class SatuanController extends Controller
      */
     public function update(UpdateSatuanRequest $request, Satuan $satuan)
     {
-        //
+        try {
+            $satuan->update($request->only(['name']));
+            return response()->json(['message' => 'Satuan updated successfully', 'data' => $satuan], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -61,6 +64,11 @@ class SatuanController extends Controller
      */
     public function destroy(Satuan $satuan)
     {
-        //
+        try {
+            $satuan->delete();
+            return response()->json(['message' => 'Satuan deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }
