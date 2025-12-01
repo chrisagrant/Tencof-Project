@@ -93,4 +93,5 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.store');
 });
 
-
+Route::get('/stok-minimum', [App\Http\Controllers\StokMinimumController::class, 'index'])
+    ->name('stok.minimum');

@@ -41,6 +41,28 @@ class PengeluaranController extends Controller
             'created_by' => Auth::id(),
         ]);
 
+
+        // Buat pengeluaran
+StockHistory::create([
+    'bahan_baku_id' => $request->bahan_baku_id,
+    'type' => StockTypeEnum::OUT,
+    'quantity' => $request->quantity,
+    'created_by' => Auth::id(),
+]);
+
+// Ambil ulang stok SETELAH trigger jalan
+$bahanBaku->refresh();
+
+// Jika stok < 5 → munculkan popup stok minimum
+if ($bahanBaku->stock < 5) {
+    return redirect()->route('pengeluaran.create')
+        ->with('warning', "Stok {$bahanBaku->name} menipis! Sisa sekarang: {$bahanBaku->stock}");
+}
+
+return redirect()->route('stock-histories.index')
+        ->with('success', 'Pengeluaran dicatat & stok berhasil dikurangi.');
+
+
         return redirect()->route('stock-histories.index')->with('success', 'Pengeluaran dicatat & Stok otomatis berkurang (via Trigger).');
     }
 }

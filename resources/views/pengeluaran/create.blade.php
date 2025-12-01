@@ -13,6 +13,31 @@
             Stok akan <strong>berkurang otomatis</strong> (via Trigger Database) setelah disimpan.
         </div>
 
+        @if(session('warning'))
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'warning',
+        title: 'Stok Menipis!',
+        text: '{{ session("warning") }}',
+        confirmButtonColor: '#d33',
+    });
+</script>
+@endif
+
+@if(session('success'))
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: '{{ session("success") }}',
+        confirmButtonColor: '#3085d6',
+    });
+</script>
+@endif
+
+
         <form action="{{ route('pengeluaran.store') }}" method="POST">
             @csrf
 
