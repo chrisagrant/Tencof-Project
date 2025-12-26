@@ -15,6 +15,7 @@
                 @method('PUT')
             @endif
 
+            {{-- Nama --}}
             <div class="form-group">
                 <label for="name">Nama Bahan Baku</label>
                 <input
@@ -31,6 +32,7 @@
                 @enderror
             </div>
 
+            {{-- Satuan --}}
             <div class="form-group">
                 <label for="satuan_id">Satuan Pengukuran</label>
                 <select name="satuan_id" id="satuan_id" class="@error('satuan_id') is-invalid @enderror" required>
@@ -38,7 +40,6 @@
                     @foreach($satuans as $satuan)
                         <option
                             value="{{ $satuan->id }}"
-                            {{-- Logic Selected: Jika ID satuan sama dengan (old input ATAU data database), maka selected --}}
                             {{ (old('satuan_id') == $satuan->id || (isset($bahanBaku) && $bahanBaku->satuan_id == $satuan->id)) ? 'selected' : '' }}
                         >
                             {{ $satuan->name }}
@@ -50,6 +51,24 @@
                 @enderror
             </div>
 
+            <div class="form-group">
+                <label for="minimum_stock">Limit Stok Minimum</label>
+                <input
+                    type="number"
+                    id="minimum_stock"
+                    name="minimum_stock"
+                    class="@error('minimum_stock') is-invalid @enderror"
+                    value="{{ old('minimum_stock', $bahanBaku->minimum_stock ?? 5) }}"
+                    min="0"
+                    placeholder="Contoh: 5"
+                    required
+                >
+                @error('minimum_stock')
+                <span style="color: var(--error); font-size: 13px;">{{ $message }}</span>
+                @enderror
+            </div>
+
+            {{-- Stok saat ini --}}
             @if(isset($bahanBaku))
                 <div class="form-group" style="background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px dashed #ccc;">
                     <label style="color: #666;">Stok Saat Ini (Tidak bisa diedit disini)</label>

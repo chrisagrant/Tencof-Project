@@ -28,9 +28,18 @@
 
                     <td>{{ $item->satuan->name ?? '-' }}</td>
 
-                    <td style="font-weight: bold; color: {{ $item->stock <= 0 ? 'var(--error)' : 'var(--success)' }}">
-                        {{ number_format($item->stock, 0, ',', '.') }}
+                    <td style="font-weight: bold;">
+    <span style="color: {{ $item->stock <= 0 ? 'var(--error)' : 'var(--success)' }}">
+        {{ number_format($item->stock, 0, ',', '.') }}
+    </span>
+
+    @if($item->stock <= $item->minimum_stock)
+                  <div style="font-size: 12px; color: #d97706; font-weight: 600;">
+                 Stok menipis
+                  </div>
+                        @endif
                     </td>
+
 
                     <td>{{ $item->creator->name ?? 'System' }}</td>
 

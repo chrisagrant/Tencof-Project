@@ -56,7 +56,7 @@ $bahanBaku->refresh();
 // Jika stok < 5 → munculkan popup stok minimum
 if ($bahanBaku->stock < 5) {
     return redirect()->route('pengeluaran.create')
-        ->with('warning', "Stok {$bahanBaku->name} menipis! Sisa sekarang: {$bahanBaku->stock}");
+        ->with('warning', "Stok {$bahanBaku->name}");
 }
 
 return redirect()->route('stock-histories.index')
